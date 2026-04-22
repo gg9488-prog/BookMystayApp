@@ -1,62 +1,48 @@
 import java.util.HashMap;
 import java.util.Map;
 
-abstract class Room {
+class Room {
     String type;
-    int beds;
     double price;
 
-    Room(String type, int beds, double price) {
+    Room(String type, double price) {
         this.type = type;
-        this.beds = beds;
         this.price = price;
     }
+}
 
-    void displayDetails() {
-        System.out.println(type + " | Beds: " + beds + " | Price: ₹" + price);
+class Inventory {
+    private Map<String, Integer> availability = new HashMap<>();
+
+    public void addRoom(String type, int count) {
+        availability.put(type, count);
+    }
+
+    public int getAvailableCount(String type) {
+        return availability.getOrDefault(type, 0);
+    }
+
+    public Map<String, Integer> getAllRooms() {
+        return availability;
     }
 }
 
-class SingleRoom extends Room {
-    SingleRoom() {
-        super("Single Room", 1, 1000);
-    }
-}
+class SearchService {
 
-class DoubleRoom extends Room {
-    DoubleRoom() {
-        super("Double Room", 2, 1800);
-    }
-}
+    public void displayAvailableRooms(Inventory inventory, Map<String, Room> roomDetails) {
 
-class SuiteRoom extends Room {
-    SuiteRoom() {
-        super("Suite Room", 3, 3000);
-    }
-}
+        System.out.println("Available Rooms:");
 
-class RoomInventory {
-    private Map<String, Integer> availability;
+        for (String type : inventory.getAllRooms().keySet()) {
 
-    RoomInventory() {
-        availability = new HashMap<>();
-        availability.put("Single Room", 5);
-        availability.put("Double Room", 3);
-        availability.put("Suite Room", 2);
-    }
+            int count = inventory.getAvailableCount(type);
 
-    int getAvailability(String roomType) {
-        return availability.getOrDefault(roomType, 0);
-    }
-
-    void updateAvailability(String roomType, int count) {
-        availability.put(roomType, count);
-    }
-
-    void displayInventory() {
-        System.out.println("===== Room Inventory =====");
-        for (Map.Entry<String, Integer> entry : availability.entrySet()) {
-            System.out.println(entry.getKey() + " -> Available: " + entry.getValue());
+            if (count > 0) {
+                Room room = roomDetails.get(type);
+                System.out.println("Type: " + type +
+                        " | Price: " + room.price +
+                        " | Available: " + count);
+            }
         }
     }
 }
@@ -65,24 +51,19 @@ public class BookMystayApp {
 
     public static void main(String[] args) {
 
-        Room r1 = new SingleRoom();
-        Room r2 = new DoubleRoom();
-        Room r3 = new SuiteRoom();
+        Inventory inventory = new Inventory();
 
-        RoomInventory inventory = new RoomInventory();
+        inventory.addRoom("Single", 3);
+        inventory.addRoom("Double", 0);
+        inventory.addRoom("Suite", 2);
 
-        r1.displayDetails();
-        System.out.println("Available: " + inventory.getAvailability(r1.type));
-        System.out.println();
+        Map<String, Room> roomDetails = new HashMap<>();
+        roomDetails.put("Single", new Room("Single", 2000));
+        roomDetails.put("Double", new Room("Double", 3500));
+        roomDetails.put("Suite", new Room("Suite", 5000));
 
-        r2.displayDetails();
-        System.out.println("Available: " + inventory.getAvailability(r2.type));
-        System.out.println();
+        SearchService service = new SearchService();
 
-        r3.displayDetails();
-        System.out.println("Available: " + inventory.getAvailability(r3.type));
-        System.out.println();
-
-        inventory.displayInventory();
+        service.displayAvailableRooms(inventory, roomDetails);
     }
 }
